@@ -1,6 +1,6 @@
 #! /bin/bash
 
-# export PULP3_HOST=myhostname.com
+# export PULP3_HOST=10.0.146.40
 # export PULP3_HOST_PORT=24817
 # export PULP3_CONTENT_HOST=myhostname.com
 # export PULP3_CONTENT_HOST_PORT=24816
@@ -14,7 +14,7 @@
 # export PULP3_ROLES_PATH=/path/to/local/ansible-pulp (optional)
 # ./install.sh
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
 HOST="${PULP3_HOST:-$(hostname)}"
 HOST_PORT="${PULP3_HOST_PORT:-24817}"
@@ -49,27 +49,27 @@ QE_TOOLS_BRANCH="${PULP3_QE_TOOLS_BRANCH:-master}"
 QE_TOOLS_USER="${PULP3_QE_TOOLS_USER:-PulpQE}"
 
 # requirements
-if ! git --version > /dev/null; then
+if ! git --version >/dev/null; then
   echo 'git is required'
   exit 1
 fi
 
-if ! sed --version > /dev/null; then
+if ! sed --version >/dev/null; then
   echo 'sed is required'
   exit 1
 fi
 
-if ! python3 -V > /dev/null; then
+if ! python3 -V >/dev/null; then
   echo 'python3 is required'
   exit 1
 fi
 
-if ! ansible-playbook --version > /dev/null; then
+if ! ansible-playbook --version >/dev/null; then
   echo 'Ansible Playbook is required is required'
   exit 1
 fi
 
-if ! ansible-galaxy --version > /dev/null; then
+if ! ansible-galaxy --version >/dev/null; then
   echo 'Ansible Galaxy is required is required'
   exit 1
 fi
@@ -82,11 +82,11 @@ pushd "${tempdir}"
 if [ "$INSTALL_MODE" == "github" ]; then
   # get the playbook locally
   echo "Fetching playbook from github"
-  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/ansible.cfg > ansible.cfg
+  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/ansible.cfg >ansible.cfg
   cat ansible.cfg
-  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/pcmd.sh > pcmd.sh
+  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/pcmd.sh >pcmd.sh
   cat pcmd.sh
-  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/"${PLAYBOOK}" > install.yml
+  curl https://raw.githubusercontent.com/"${QE_TOOLS_USER}"/pulp-qe-tools/"${QE_TOOLS_BRANCH}"/pulp3/install_pulp3/"${PLAYBOOK}" >install.yml
   cat install.yml
 else
   # For local debugging uncomment this line
@@ -99,11 +99,11 @@ fi
 chmod +x ./pcmd.sh
 
 if [ "$ROLES_PATH" == "github" ]; then
-    echo "Fetching ansible installer roles from github"
-    git clone https://github.com/pulp/ansible-pulp.git
+  echo "Fetching ansible installer roles from github"
+  git clone https://github.com/pulp/ansible-pulp.git
 else
-    echo "Using local roles from $ROLES_PATH"
-    cp -R "$ROLES_PATH" ./ansible-pulp
+  echo "Using local roles from $ROLES_PATH"
+  cp -R "$ROLES_PATH" ./ansible-pulp
 fi
 
 echo "Installing roles."
@@ -123,7 +123,8 @@ ansible-playbook -v -c "${ANSIBLE_CONNECTION}" -i "${HOST}", -u root install.yml
   -e pulp_api_bind=0.0.0.0:"${HOST_PORT}" \
   -e plugins_list="${PLUGINS}" \
   -e install_dev_tools="${DEV_TOOLS}" \
-  -e ansible_python_interpreter="/usr/bin/python"
+  -e ansible_api_hostname="${HOST}":"${HOST_PORT}" \
+  -e ansible_content_hostname="${CONTENT_HOST}":"${CONTENT_HOST_PORT}"/pulp/content/
 
 echo "Cleaning."
 popd
